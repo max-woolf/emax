@@ -105,8 +105,7 @@
 (global-set-key (kbd "s-b") 'counsel-switch-buffer) ;; buffers
 
 ;; binds - tools
-;;(global-set-key (kbd "s-t") 'open-eat)
-(global-set-key (kbd "s-t") 'open-terminal-with-bash)
+(global-set-key (kbd "s-t") 'open-eat)
 (global-set-key (kbd "s-e") 'eshell)
 (global-set-key (kbd "s-g") 'magit-status)
 
@@ -194,10 +193,6 @@
     (write-region "" nil file)
     (message "Created file: %s" file)
     (revert-buffer))) ;; refresh Dired view
-
-(defun open-terminal-with-bash ()
-  (interactive)
-  (ansi-term "/bin/bash"))
 
 ;; ;; START: programming
 
@@ -366,8 +361,9 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-	'(counsel diff-hl doom-themes eat gruvbox-theme magit monokai-theme
-	   solarized-theme super-save undo-tree zenburn-theme)))
+	'(counsel diff-hl doom-themes eat git gruvbox-theme magit
+	   monokai-theme solarized-theme super-save undo-tree
+	   zenburn-theme)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
