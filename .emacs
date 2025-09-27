@@ -1,4 +1,3 @@
-
 ;;
 ;; >_<
 ;; emax
@@ -103,6 +102,7 @@
 (global-set-key (kbd "C-M-f") 'counsel-rg)  ;; fuzzy search across project (ripgrep)
 (global-set-key (kbd "M-x") 'counsel-M-x)   ;; fuzzy M-x
 (global-set-key (kbd "s-b") 'counsel-switch-buffer) ;; buffers
+(global-set-key (kbd "s-f") 'counsel-find-file)
 
 ;; binds - tools
 ;;(global-set-key (kbd "s-t") 'open-eat)
