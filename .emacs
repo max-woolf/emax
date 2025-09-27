@@ -82,8 +82,9 @@
 (global-set-key (kbd "C-c C-s") 'copy-current-line)		;; copy line
 (global-set-key (kbd "TAB") 'indent-for-tab-command)	;; make TAB do indentation
 (global-set-key (kbd "C-c v") 'yank-below)				;; paste below
-(global-set-key (kbd "s-t") 'open-eat)                     ;; open terminal  
+(global-set-key (kbd "s-t") 'open-eat)                  ;; open terminal  
 (global-set-key (kbd "s-q") 'save-and-quit-buffer)      ;; save and quit
+(global-set-key (kbd "s-k") 'kill-this-buffer)
 
 ;; binds - movement
 (global-set-key (kbd "C-<left>") 'backward-word)
@@ -105,7 +106,7 @@
 
 ;; binds - tools
 (global-set-key (kbd "s-t") 'open-eat)
-
+(global-set-key (kbd "s-e") 'eshell)
 ;; binds - split window
 (global-set-key (kbd "C-s-<left>")  (lambda () (interactive) (split-window-right)  (windmove-right)))
 (global-set-key (kbd "C-s-<right>") (lambda () (interactive) (split-window-right)  (windmove-right)))
@@ -118,6 +119,11 @@
 (global-set-key (kbd "M-s-<down>") 'windmove-down)
 ;; manip windows 
 (global-set-key (kbd "s-q") 'delete-window)
+
+;; binds - dir navigation
+(global-set-key (kbd "S-s-d")  (lambda () (interactive) (dired "$HOME/"))) ;; open dired in home dir
+(global-set-key (kbd "s-d") 'open-dired-here) ;; open dired in current dir
+(with-eval-after-load 'dired  (define-key dired-mode-map (kbd ".") 'dired-up-directory)) ;; go back with ..
 
 ;; functions
 (defun reload-init-file ()
@@ -170,6 +176,12 @@
     (when (not (eat-running-p))
       (kill-buffer buf))))
 (add-hook 'eat-exit-hook 'my/eat-auto-close)
+
+(defun open-dired-here ()
+  "Open Dired in the directory of the current buffer."
+  (interactive)
+  (dired (or (file-name-directory (or (buffer-file-name) default-directory))
+             default-directory)))
 
 ;; ;; START: programming
 
@@ -294,6 +306,22 @@
   :config
   (eat-eshell-mode 1))
 
+(use-package dired
+  :ensure nil ;; built-in
+  :commands (dired dired-jump)
+  :config
+  (setq dired-listing-switches "-alh")) ;; human-readable sizes
+
+(add-hook 'dired-mode-hook 'auto-revert-mode) ;; dired: auto-update filechanges
+
+(use-package diff-hl
+  :ensure t
+  :hook ((prog-mode . diff-hl-mode)
+         (dired-mode . diff-hl-dired-mode)
+         (magit-post-refresh . diff-hl-magit-post-refresh))
+  :config
+  (diff-hl-flydiff-mode 1)) ;; update on-the-fly
+
 ;; END
 
 ;; ;; START: servers
@@ -313,8 +341,8 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-	'(counsel doom-themes eat gruvbox-theme monokai-theme solarized-theme
-	   super-save undo-tree zenburn-theme)))
+	'(counsel diff-hl doom-themes eat gruvbox-theme monokai-theme
+	   solarized-theme super-save undo-tree zenburn-theme)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
