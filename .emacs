@@ -1,3 +1,4 @@
+
 ;;
 ;; >_<
 ;; emax
@@ -21,7 +22,7 @@
 (show-paren-mode 1)                                ;; highlights ()
 (global-hl-line-mode 1)                            ;; highlight current line
 (global-display-line-numbers-mode 1)               ;; show line num on left
-(load-theme 'doom-dark+ t)                         ;; load default theme
+;;(load-theme 'doom-dark+ t)                         ;; load default theme
 (setq shift-select-mode t)                         ;; holding shift and using arrows selects stuff
 (recentf-mode 1)                                   ;; recent files
 (savehist-mode 1)                                  ;; command history, search inputs, etc
@@ -31,6 +32,7 @@
 (winner-mode 1)                                    ;; undo/redo of window configurations
 (desktop-save-mode 1)                              ;; saves and restores emacs sessions
 (editorconfig-mode 1)                              ;; .editorconfig
+(context-menu-mode 1)                              ;; right-click for context menu
 
 ;; settings - keys
 ;;
@@ -75,15 +77,19 @@
 (global-set-key (kbd "s-r") 'reload-init-file)			;; reload cfg
 (global-set-key (kbd "C-a") 'mark-whole-buffer)			;; select all
 (global-set-key (kbd "M-c") 'open-config)				;; open cfg
-(global-set-key (kbd "M-t") 'counsel-load-theme)		;; open theme menu
+(global-set-key (kbd "M-t") 'counsel-load-theme)	    ;; open theme menu
 (global-set-key (kbd "C-d") 'kill-whole-line)			;; cut line
 (global-set-key (kbd "C-c s") 'copy-current-line)		;; copy line
 (global-set-key (kbd "C-c C-s") 'copy-current-line)		;; copy line
 (global-set-key (kbd "TAB") 'indent-for-tab-command)	;; make TAB do indentation
 (global-set-key (kbd "C-c v") 'yank-below)				;; paste below
-(global-set-key (kbd "s-t") 'open-eat)                  ;; open terminal  
+;;(global-set-key (kbd "s-t") 'open-eat)                ;; open terminal  
 (global-set-key (kbd "s-q") 'save-and-quit-buffer)      ;; save and quit
-(global-set-key (kbd "s-k") 'kill-this-buffer)
+(global-set-key (kbd "C-l") 'comment-dwim)              ;; comment out selected
+(global-set-key (kbd "C-l") 'my/comment-or-uncomment)
+(global-set-key (kbd "C-k") #'kill-this-buffer)         ;; kill buffer
+(global-set-key (kbd "<escape>") #'winner-undo)         ;; go back
+(global-set-key (kbd "C-<escape>") #'my/abort-with-message)
 
 ;; binds - movement
 (global-set-key (kbd "C-<left>") 'backward-word)
@@ -101,14 +107,12 @@
 (global-set-key (kbd "C-f") 'swiper)        ;; fuzzy search in current buffer
 (global-set-key (kbd "C-M-f") 'counsel-rg)  ;; fuzzy search across project (ripgrep)
 (global-set-key (kbd "M-x") 'counsel-M-x)   ;; fuzzy M-x
-(global-set-key (kbd "s-b") 'counsel-switch-buffer) ;; buffers
-(global-set-key (kbd "s-f") 'counsel-find-file)
+(global-set-key (kbd "s-b") 'counsel-switch-buffer) ;; view buffers
+(global-set-key (kbd "C-b") 'counsel-switch-buffer) ;; view buffers
 
 ;; binds - tools
 ;;(global-set-key (kbd "s-t") 'open-eat)
-(global-set-key (kbd "s-t") 'open-terminal-with-bash)
-(global-set-key (kbd "s-e") 'eshell)
-(global-set-key (kbd "s-g") 'magit-status)
+(global-set-key (kbd "M-g") #'magit-status)
 
 ;; binds - split window
 (global-set-key (kbd "C-s-<left>")  (lambda () (interactive) (split-window-right)  (windmove-right)))
@@ -123,11 +127,31 @@
 ;; manip windows 
 (global-set-key (kbd "s-q") 'delete-window)
 
-;; binds - dir navigation
-(global-set-key (kbd "S-s-d")  (lambda () (interactive) (dired "$HOME/"))) ;; open dired in home dir
-(global-set-key (kbd "s-d") 'open-dired-here) ;; open dired in current dir
-(with-eval-after-load 'dired  (define-key dired-mode-map (kbd ".") 'dired-up-directory)) ;; go back with ..
-(with-eval-after-load 'dired  (define-key dired-mode-map (kbd "n") 'my/dired-create-file))
+;; binds - eglot (lsp)
+(define-prefix-command 'my-eglot-prefix)
+(global-set-key (kbd "C-e") 'my-eglot-prefix)
+(with-eval-after-load 'eglot
+  (define-key eglot-mode-map (kbd "C-e r") 'eglot-rename)                ;; rename symbol
+  (define-key eglot-mode-map (kbd "C-e a") 'eglot-code-actions)          ;; code actions
+  (define-key eglot-mode-map (kbd "C-e f") 'eglot-format-buffer)         ;; format buffer
+  (define-key eglot-mode-map (kbd "C-e d") 'xref-find-definitions)       ;; go to definition
+  (define-key eglot-mode-map (kbd "C-e b") 'xref-pop-marker-stack)       ;; back from definition
+  (define-key eglot-mode-map (kbd "C-e h") 'eldoc)                       ;; show hover doc
+  (define-key eglot-mode-map (kbd "C-e i") 'eglot-find-implementation)   ;; find implementation
+  (define-key eglot-mode-map (kbd "C-e t") 'eglot-find-typeDefinition))  ;; find type
+
+;; binds - company (autocomplete)
+(with-eval-after-load 'company
+  (define-key company-active-map (kbd "<tab>") 'company-complete-selection)
+  (define-key company-active-map (kbd "M-n") 'company-select-next)
+  (define-key company-active-map (kbd "M-p") 'company-select-previous))
+(with-eval-after-load 'company
+  ;; Unbind arrow keys in company completion popup
+  (define-key company-active-map (kbd "<down>") nil)
+  (define-key company-active-map (kbd "<up>") nil)
+  (define-key company-active-map (kbd "<left>") nil)
+  (define-key company-active-map (kbd "<right>") nil))
+
 
 ;; functions
 (defun reload-init-file ()
@@ -175,29 +199,19 @@
   (interactive)
   (eat "*eat*"))
 
-(defun my/eat-auto-close ()
-  (let ((buf (current-buffer)))
-    (when (not (eat-running-p))
-      (kill-buffer buf))))
-(add-hook 'eat-exit-hook 'my/eat-auto-close)
-
-(defun open-dired-here ()
-  "Open Dired in the directory of the current buffer."
+(defun my/comment-or-uncomment ()
+  "Comment or uncomment current line or active region."
   (interactive)
-  (dired (or (file-name-directory (or (buffer-file-name) default-directory))
-             default-directory)))
+  (if (use-region-p)
+      (comment-or-uncomment-region (region-beginning) (region-end))
+    (comment-line 1)))
 
-(defun my/dired-create-file ()
-  "Create an empty file at point in Dired."
+(defun my/abort-with-message ()
   (interactive)
-  (let ((file (read-string "New file name: " (dired-get-file-for-visit))))
-    (write-region "" nil file)
-    (message "Created file: %s" file)
-    (revert-buffer))) ;; refresh Dired view
+  (message "Abort triggered!")
+  (keyboard-quit))
 
-(defun open-terminal-with-bash ()
-  (interactive)
-  (ansi-term "/bin/bash"))
+
 
 ;; ;; START: programming
 
@@ -229,10 +243,8 @@
 (require 'package)
 
 (setq package-enable-at-startup nil) ;; Prevent double initialization
-
-(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
-(add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
-(add-to-list 'package-archives '("nongnu" . "https://elpa.nongnu.org/nongnu/"))
+(add-to-list 'package-archives
+             '("melpa" . "https://melpa.org/packages/") t)
 
 (package-initialize)
 
@@ -324,28 +336,64 @@
   :config
   (eat-eshell-mode 1))
 
-(use-package dired
-  :ensure nil ;; built-in
-  :commands (dired dired-jump)
-  :config
-  (setq dired-listing-switches "-alh")) ;; human-readable sizes
-
-(add-hook 'dired-mode-hook 'auto-revert-mode) ;; dired: auto-update filechanges
-
-(use-package diff-hl
+;; lsp
+(use-package eglot
   :ensure t
-  :hook ((prog-mode . diff-hl-mode)
-         (dired-mode . diff-hl-dired-mode)
-         (magit-post-refresh . diff-hl-magit-post-refresh))
+  :hook
+  ((c-mode c++-mode python-mode go-mode js-mode typescript-mode) . eglot-ensure)
   :config
-  (diff-hl-flydiff-mode 1)) ;; update on-the-fly
+  (setq eglot-autoshutdown t)
+  (add-to-list 'eglot-server-programs
+               '(c-mode . ("clangd")))
+  (add-to-list 'eglot-server-programs
+               '(c++-mode . ("clangd"))))
 
-;;(use-package magit
-;;   :ensure t)
-;;(unless (package-installed-p 'magit) (package-install 'magit))
+;; autocomplete
+(use-package company
+  :ensure t
+  :init
+  (global-company-mode 1)  ;; enable everywhere
+  :config
+  (setq company-idle-delay 0.1              ;; delay before suggestions popup
+        company-minimum-prefix-length 1     ;; start completing after 1 char
+        company-show-numbers t              ;; show quick selection numbers
+        company-tooltip-align-annotations t ;; align annotations (like types)
+        company-selection-wrap-around t))   ;; wrap around suggestion list
 
-(use-package git
-  :ensure t)
+(add-hook 'eglot-managed-mode-hook #'company-mode)
+
+;; git
+(use-package magit
+  :ensure t) 
+
+
+;; (use-package lsp-mode
+;;   :ensure t
+;;   :hook ((c-mode c++-mode python-mode js-mode typescript-mode) . lsp)
+;;   :commands lsp
+;;   :config
+;;   (setq lsp-enable-snippet t
+;;         lsp-keymap-prefix "C-e"  ;; Or any prefix you want
+;;         lsp-prefer-flymake nil)) ;; Use flycheck instead of flymake
+
+;; (use-package lsp-ui
+;;   :ensure t
+;;   :after lsp-mode
+;;   :commands lsp-ui-mode
+;;   :hook (lsp-mode . lsp-ui-mode)
+;;   :config
+;;   (setq lsp-ui-doc-enable t
+;;         lsp-ui-doc-position 'at-point
+;;         lsp-ui-sideline-enable t
+;;         lsp-ui-sideline-show-code-actions t
+;;         lsp-ui-sideline-show-diagnostics t
+;;         lsp-ui-doc-show-with-cursor t))
+
+;; (use-package flycheck
+;;   :ensure t
+;;   :init (global-flycheck-mode))
+
+
 
 ;; END
 
@@ -366,8 +414,8 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-	'(counsel diff-hl doom-themes eat gruvbox-theme magit monokai-theme
-	   solarized-theme super-save undo-tree zenburn-theme)))
+	'(counsel doom-themes eat gruvbox-theme monokai-theme solarized-theme
+	   super-save undo-tree zenburn-theme)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

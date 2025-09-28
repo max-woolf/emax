@@ -84,7 +84,7 @@
 (global-set-key (kbd "C-c v") 'yank-below)				;; paste below
 (global-set-key (kbd "s-t") 'open-eat)                  ;; open terminal  
 (global-set-key (kbd "s-q") 'save-and-quit-buffer)      ;; save and quit
-(global-set-key (kbd "s-k") 'kill-this-buffer)
+(global-set-key (kbd "C-l") 'comment-dwim)              ;; comment out
 
 ;; binds - movement
 (global-set-key (kbd "C-<left>") 'backward-word)
@@ -106,8 +106,6 @@
 
 ;; binds - tools
 (global-set-key (kbd "s-t") 'open-eat)
-(global-set-key (kbd "s-e") 'eshell)
-(global-set-key (kbd "s-g") 'magit-status)
 
 ;; binds - split window
 (global-set-key (kbd "C-s-<left>")  (lambda () (interactive) (split-window-right)  (windmove-right)))
@@ -121,12 +119,6 @@
 (global-set-key (kbd "M-s-<down>") 'windmove-down)
 ;; manip windows 
 (global-set-key (kbd "s-q") 'delete-window)
-
-;; binds - dir navigation
-(global-set-key (kbd "S-s-d")  (lambda () (interactive) (dired "$HOME/"))) ;; open dired in home dir
-(global-set-key (kbd "s-d") 'open-dired-here) ;; open dired in current dir
-(with-eval-after-load 'dired  (define-key dired-mode-map (kbd ".") 'dired-up-directory)) ;; go back with ..
-(with-eval-after-load 'dired  (define-key dired-mode-map (kbd "n") 'my/dired-create-file))
 
 ;; functions
 (defun reload-init-file ()
@@ -174,26 +166,6 @@
   (interactive)
   (eat "*eat*"))
 
-(defun my/eat-auto-close ()
-  (let ((buf (current-buffer)))
-    (when (not (eat-running-p))
-      (kill-buffer buf))))
-(add-hook 'eat-exit-hook 'my/eat-auto-close)
-
-(defun open-dired-here ()
-  "Open Dired in the directory of the current buffer."
-  (interactive)
-  (dired (or (file-name-directory (or (buffer-file-name) default-directory))
-             default-directory)))
-
-(defun my/dired-create-file ()
-  "Create an empty file at point in Dired."
-  (interactive)
-  (let ((file (read-string "New file name: " (dired-get-file-for-visit))))
-    (write-region "" nil file)
-    (message "Created file: %s" file)
-    (revert-buffer))) ;; refresh Dired view
-
 ;; ;; START: programming
 
 (setq lisp-indent-offset 2)
@@ -224,10 +196,8 @@
 (require 'package)
 
 (setq package-enable-at-startup nil) ;; Prevent double initialization
-
-(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
-(add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
-(add-to-list 'package-archives '("nongnu" . "https://elpa.nongnu.org/nongnu/"))
+(add-to-list 'package-archives
+             '("melpa" . "https://melpa.org/packages/") t)
 
 (package-initialize)
 
@@ -319,28 +289,42 @@
   :config
   (eat-eshell-mode 1))
 
-(use-package dired
-  :ensure nil ;; built-in
-  :commands (dired dired-jump)
-  :config
-  (setq dired-listing-switches "-alh")) ;; human-readable sizes
+;; (use-package eglot
+;;   :ensure t
+;;   :hook
+;;   ((c-mode c++-mode python-mode go-mode js-mode typescript-mode) . eglot-ensure)
+;;   :config
+;;   (setq eglot-autoshutdown t)
+;;   (add-to-list 'eglot-server-programs
+;;                '(c-mode . ("clangd")))
+;;   (add-to-list 'eglot-server-programs
+;;                '(c++-mode . ("clangd"))))
 
-(add-hook 'dired-mode-hook 'auto-revert-mode) ;; dired: auto-update filechanges
-
-(use-package diff-hl
+(use-package lsp-mode
   :ensure t
-  :hook ((prog-mode . diff-hl-mode)
-         (dired-mode . diff-hl-dired-mode)
-         (magit-post-refresh . diff-hl-magit-post-refresh))
+  :hook ((c-mode c++-mode python-mode js-mode typescript-mode) . lsp)
+  :commands lsp
   :config
-  (diff-hl-flydiff-mode 1)) ;; update on-the-fly
+  (setq lsp-enable-snippet t
+        lsp-keymap-prefix "C-e"  ;; Or any prefix you want
+        lsp-prefer-flymake nil)) ;; Use flycheck instead of flymake
 
-;;(use-package magit
-;;   :ensure t)
-;;(unless (package-installed-p 'magit) (package-install 'magit))
+(use-package lsp-ui
+  :ensure t
+  :after lsp-mode
+  :commands lsp-ui-mode
+  :hook (lsp-mode . lsp-ui-mode)
+  :config
+  (setq lsp-ui-doc-enable t
+        lsp-ui-doc-position 'at-point
+        lsp-ui-sideline-enable t
+        lsp-ui-sideline-show-code-actions t
+        lsp-ui-sideline-show-diagnostics t
+        lsp-ui-doc-show-with-cursor t))
 
-(use-package git
-  :ensure t)
+(use-package flycheck
+  :ensure t
+  :init (global-flycheck-mode))
 
 ;; END
 
@@ -361,9 +345,8 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-	'(counsel diff-hl doom-themes eat git gruvbox-theme magit
-	   monokai-theme solarized-theme super-save undo-tree
-	   zenburn-theme)))
+	'(company counsel doom-themes eat gruvbox-theme monokai-theme
+	   solarized-theme super-save undo-tree zenburn-theme)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
