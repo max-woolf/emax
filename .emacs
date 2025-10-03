@@ -176,7 +176,6 @@
 (global-set-key (kbd "C-s") 'save-buffer)
 (global-set-key (kbd "C-v") 'yank)
 (global-set-key (kbd "C-z") 'undo)
-(global-set-key (kbd "C-S-z") 'undo-tree-redo)
 ;;(global-set-key (kbd "C-<backspace>") #'backward-kill-word)
 (global-set-key (kbd "C-S-<backspace>") #'backward-kill-word)
 (global-set-key (kbd "C-a") 'mark-whole-buffer)
@@ -244,6 +243,13 @@
 
 (use-package undo-tree :ensure t :init)
 (global-undo-tree-mode 1)
+(global-set-key (kbd "C-S-z") 'undo-tree-redo)
+;; Set directory for undo-tree history files
+(defvar my-undo-tree-dir (expand-file-name "~/.emacs.d/undo-tree-history/"))
+(unless (file-exists-p my-undo-tree-dir)
+  (make-directory my-undo-tree-dir t))
+(setq undo-tree-history-directory-alist
+      `(("." . ,my-undo-tree-dir)))
 
 (defun move-up-to-line-end ()
   "Move cursor up one line and go to end of that line."
@@ -333,7 +339,6 @@
   :ensure t
   :hook (dired-mode . dired-git-info-mode))
 
-
 (use-package diff-hl
   :hook ((dired-mode . diff-hl-dired-mode)
          (magit-post-refresh . diff-hl-magit-post-refresh))
@@ -356,6 +361,26 @@
 
 (require 'midnight)
 (midnight-mode 1)
+
+;; Directory to store backup and autosave files
+(defvar my-auxiliary-files-dir (expand-file-name "~/.emacs.d/auxiliary/"))
+
+;; Make sure the directory exists
+(unless (file-exists-p my-auxiliary-files-dir)
+  (make-directory my-auxiliary-files-dir t))
+
+;; Backup files
+(setq backup-directory-alist `(("." . ,my-auxiliary-files-dir)))
+(setq backup-by-copying t) ;; To avoid issues with symlinks
+
+;; Autosave files
+(setq auto-save-file-name-transforms
+      `((".*" ,(concat my-auxiliary-files-dir "/\\1") t)))
+
+;; Lock files (those #filename# files that prevent simultaneous editing)
+(setq create-lockfiles nil) ;; Optional: disable if annoying
+
+
 
 (require 'server)
 (unless (server-running-p)
