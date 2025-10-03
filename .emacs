@@ -47,18 +47,15 @@
 (require 'use-package)
 (setq use-package-always-ensure t)
 
-;; vanilla text binds
 (global-set-key (kbd "C-s") 'save-buffer)
 (global-set-key (kbd "C-v") 'yank)
 (global-set-key (kbd "C-z") 'undo)
 (global-set-key (kbd "C-S-<backspace>") #'backward-kill-word)
 (global-set-key (kbd "C-a") 'mark-whole-buffer)
 
-;; vanilla navigation binds
 (global-set-key (kbd "C-g") #'goto-line)
 (global-set-key (kbd "s-q") #'delete-window)
 
-;; vanilla misc binds
 (global-set-key (kbd "M-v") 'eval-expression)
 
 ;; vanilla cfg binds
@@ -363,7 +360,7 @@
 )
 
 (require 'server)
-(unless (server-running-p)
+(unless (server-running-p))
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -375,7 +372,7 @@
 				  doom-themes eat elixir-mode flycheck gcmh git
 				  go-mode good-scroll gruvbox-theme lsp-ui magit
 				  material-theme monokai-theme multiple-cursors
-				  projectile solarized-theme super-save
+				  org-superstar projectile solarized-theme super-save
 				  typescript-mode undo-tree vterm web-mode yaml-mode
 				  yasnippet zenburn-theme zig-mode)))
 (custom-set-faces
