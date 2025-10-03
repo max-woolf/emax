@@ -90,15 +90,46 @@
 (use-package zenburn-theme :ensure t)
 (use-package material-theme :ensure t :config)
 (use-package base16-theme :ensure t :config)
-(load-theme 'base16-monokai t)
-(set-face-foreground 'font-lock-comment-face "green")
+(use-package modus-themes :ensure t :init)
+(use-package ef-themes :ensure t :config)
+
+;;(load-theme 'base16-monokai t)
+(load-theme 'base16-catppuccin-mocha t)(set-face-foreground 'font-lock-comment-face "green")
 (set-face-foreground 'font-lock-comment-delimiter-face "green")
+
+(set-face-attribute 'default nil
+  :font "Lexend"
+  :height 140) 
+(setq-default line-spacing 0.2)
 
 (use-package ivy :ensure t)
 (ivy-mode 1)
 
 (use-package counsel :ensure t)
 (global-set-key (kbd "M-t") 'counsel-load-theme)
+(global-set-key (kbd "C-M-f") 'counsel-rg)
+(global-set-key (kbd "M-x") 'counsel-M-x)
+(global-set-key (kbd "C-b") 'counsel-switch-buffer)
+;; Add kill buffer action to counsel-switch-buffer
+(with-eval-after-load 'counsel
+  (ivy-set-actions
+   'counsel-switch-buffer
+   '(("k" (lambda (buffer)
+            (when (get-buffer buffer)
+              (kill-buffer buffer)
+              (message "Killed buffer: %s" buffer)))
+      "kill buffer"))))
+;; Bind C-k to call the kill action in counsel-switch-buffer
+(with-eval-after-load 'ivy
+  (define-key ivy-minibuffer-map (kbd "C-k")
+    (lambda ()
+      (interactive)
+      (ivy-exit-with-action
+       (lambda (buffer)
+         (when (get-buffer buffer)
+           (kill-buffer buffer)
+           (message "Killed buffer: %s" buffer)))))))
+
 
 (winner-mode 1)
 
@@ -127,7 +158,31 @@
       (winner-undo))))
 (global-set-key (kbd "<escape>") #'esc-deselect-or-winner-undo)
 
+(use-package hungry-delete
+  :ensure t
+  :config
+  (global-hungry-delete-mode))
+
 (setq select-enable-clipboard t)
+
+(defun new-scratch-buffer ()
+  "Create a new scratch buffer in a new window."
+  (interactive)
+  (let ((buf (generate-new-buffer "*scratch*")))
+    (select-window (split-window-right))
+    (switch-to-buffer buf)
+    (lisp-interaction-mode)))  ;; or any other mode you prefer
+(global-set-key (kbd "C-n") #'new-scratch-buffer)
+
+(defun cancel-or-kill-buffer ()
+  "If minibuffer is active, cancel it like `C-g`. Otherwise, kill the current buffer."
+  (interactive)
+  (if (minibufferp)
+      (keyboard-escape-quit)
+    (kill-this-buffer)))
+(global-set-key (kbd "C-q") #'cancel-or-kill-buffer)
+
+(desktop-save-mode 1)
 
 (editorconfig-mode 1)
 
@@ -248,9 +303,8 @@
 
 (use-package swiper :ensure t)
 (global-set-key (kbd "C-f") 'swiper)
-(global-set-key (kbd "C-M-f") 'counsel-rg)
-(global-set-key (kbd "M-x") 'counsel-M-x)
-(global-set-key (kbd "C-b") 'counsel-switch-buffer)
+(with-eval-after-load 'swiper
+  (define-key swiper-map (kbd "<escape>") #'abort-recursive-edit))
 
 (defun select-current-line ()
   "Select the current line without cutting or killing."
@@ -337,22 +391,25 @@
   :hook (dired-mode . dired-git-info-mode))
 (use-package diff-hl
   :hook ((dired-mode . diff-hl-dired-mode)
-         (magit-post-refresh . diff-hl-magit-post-refresh))
-  :config
-  (global-diff-hl-mode))
-(use-package blamer
-  :defer t
-  :custom
-  (blamer-idle-time 0.5)
-  (blamer-min-offset 70)
-  (blamer-prettify-time-p t)
-  (blamer-type 'visual)  ;; Show as overlay
-  :custom-face
-  (blamer-face ((t :foreground "#7a88cf"
-                   :background nil
-                   :height 0.9
-                   :italic t)))
-  :hook (prog-mode . blamer-mode))
+         (magit-post-refresh . diff-hl-magit-post-refresh)))
+(global-diff-hl-mode -1)
+(setq vc-handled-backends nil)
+;; MAX: this is glitching out
+;;
+;; (use-package blamer
+;;   :defer t
+;;   :custom
+;;   (blamer-idle-time 0.5)
+;;   (blamer-min-offset 70)
+;;   (blamer-prettify-time-p t)
+;;   (blamer-type 'visual)  ;; Show as overlay
+;;   :custom-face
+;;   (blamer-face ((t :foreground "#7a88cf"
+;;                    :background nil
+;;                    :height 0.9
+;;                    :italic t)))
+;;   :hook (prog-mode . blamer-mode))
+(add-hook 'prog-mode-hook (lambda () (when (boundp 'blamer-mode) (blamer-mode -1))))
 
 (require 'midnight)
 (midnight-mode 1)
@@ -380,6 +437,46 @@
   ;; Unbind other keys you find problematic similarly
 )
 
+;; vterm fixes
+(defun vterm-rebuild-module ()
+  "Manually rebuild the vterm native module."
+  (interactive)
+  (let* ((vterm-dir (file-name-directory (locate-library "vterm.el")))
+         (src-dir (expand-file-name "src" vterm-dir))
+         (default-directory src-dir))
+    (if (file-directory-p src-dir)
+        (progn
+          (message "Rebuilding vterm native module in %s ..." src-dir)
+          (shell-command "make clean && make")
+          (message "vterm rebuild done!"))
+      (message "vterm source directory not found: %s" src-dir))))
+(add-hook 'vterm-mode-hook
+          (lambda ()
+            ;; Disable visual clutter
+            (display-line-numbers-mode -1)
+            (good-scroll-mode -1)
+            (hungry-delete-mode -1)
+            (undo-tree-mode -1)
+            (company-mode -1)
+            (global-hl-line-mode -1)
+            (blink-cursor-mode -1)
+            (tooltip-mode -1)
+
+            ;; Reduce line spacing for terminal aesthetics
+            (setq-local line-spacing 0)
+
+            ;; Reset font size only (inherits system/default font)
+            (setq-local face-remapping-alist '((default :height 1.0)))
+
+            ;; DO NOT override background/foreground of default face
+            ;; This keeps vterm ANSI colors untouched
+
+            ;; DO NOT set `vterm-color-cursor` — let theme handle it
+
+            ;; Optional: thinner bar cursor
+            (setq-local cursor-type 'bar)))
+
+
 (require 'server)
 (unless (server-running-p) (server-start))
 
@@ -389,14 +486,14 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(base16-theme bases16-theme blamer company counsel diff-hl dired-git
-				  doom-themes eat elixir-mode flycheck gcmh git
-				  go-mode good-scroll gruvbox-theme lsp-ui magit
-				  material-theme monokai-theme multiple-cursors
-				  org-superstar pixel-scroll projectile
-				  solarized-theme super-save typescript-mode undo-tree
-				  vterm web-mode yaml-mode yasnippet zenburn-theme
-				  zig-mode)))
+   '(base16-theme bases16-theme company counsel diff-hl dired-git
+				  doom-themes eat ef-themes elixir-mode flycheck gcmh
+				  git go-mode good-scroll gruvbox-theme lsp-ui magit
+				  material-theme modus-themes monokai-theme
+				  multiple-cursors org-superstar pixel-scroll
+				  projectile solarized-theme super-save
+				  typescript-mode undo-tree web-mode yaml-mode
+				  yasnippet zenburn-theme zig-mode)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
