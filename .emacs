@@ -37,6 +37,8 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;;(setq debug-on-error t)
+
 ;; package manager
 (require 'package)
 (setq package-enable-at-startup nil)
@@ -63,6 +65,13 @@
 
 (use-package counsel :ensure t)
 (global-set-key (kbd "M-t") 'counsel-load-theme)
+
+(defun reload-init-file ()
+  "Reload Emacs configuration file."
+  (interactive)
+  (load-file user-init-file)
+  (message "cfg reloaded :3"))
+(global-set-key (kbd "s-r") 'reload-init-file)  ;; reload cfg
 
 ;; gui
 (tool-bar-mode 0)
@@ -94,15 +103,31 @@
 (setq select-enable-clipboard t)
 
 (editorconfig-mode 1)
+
 (setq-default indent-tabs-mode t)
 (setq-default tab-width 4)
 
+(global-set-key (kbd "TAB") #'indent-for-tab-command)
+
+(defun backtab-indent-opposite ()
+  "Do the opposite of `indent-for-tab-command`: unindent by `tab-width`."
+  (interactive)
+  (let ((shift-width (or tab-width 4)))
+    (if (use-region-p)
+        ;; Dedent region
+        (indent-rigidly (region-beginning) (region-end) (- shift-width))
+      ;; Dedent current line
+      (indent-rigidly (line-beginning-position) (line-end-position) (- shift-width)))))
+(global-set-key (kbd "<backtab>") #'backtab-indent-opposite)
+
+
 (use-package eglot :ensure t)
-(add-hook 'c-mode-hook' #'eglot-ensure)
-(add-hook 'c++-mode-hook' #'eglot-ensure)
-(add-hook 'python-mode-hook' #'eglot-ensure)
+(add-hook 'c-mode-hook #'eglot-ensure)
+(add-hook 'c++-mode-hook #'eglot-ensure)
+(add-hook 'python-mode-hook #'eglot-ensure)
 (add-to-list 'eglot-server-programs '(c-mode . ("clangd")))
 (add-to-list 'eglot-server-programs '(c++-mode . ("clangd")))
+(add-to-list 'eglot-server-programs '(python-mode . ("pyright-langserver" "--stdio")))
 (add-to-list 'eglot-server-programs '(nim-mode . ("nimlsp")))
 (add-to-list 'eglot-server-programs '((js-mode js2-mode typescript-mode tsx-ts-mode) . ("typescript-language-server" "--stdio")))
 (add-to-list 'eglot-server-programs '((html-mode web-mode) . ("vscode-html-language-server" "--stdio")))
@@ -110,6 +135,9 @@
 (add-to-list 'eglot-server-programs '(go-mode . ("gopls")))
 (add-to-list 'eglot-server-programs '(elixir-mode . ("elixir-ls")))
 (add-to-list 'eglot-server-programs '(haskell-mode . ("haskell-language-server-wrapper" "--lsp")))
+(add-to-list 'auto-mode-alist '("SConstruct\\'" . python-mode))
+(add-to-list 'auto-mode-alist '("SConscript\\'" . python-mode))
+
 (with-eval-after-load 'eglot
   ;; Create a keymap for the prefix
   (define-prefix-command 'eglot-prefix-map)
@@ -126,6 +154,24 @@
 (global-company-mode 1)
 
 (add-hook 'eglot-managed-mode-hook #'company-mode)
+
+(use-package projectile
+  :ensure t
+  :init
+  ;; Optional: define project search paths
+  (setq projectile-project-search-path '("~/projects/" "~/code/" "~/mygit/"))
+
+  ;; Optional: faster indexing and caching
+  (setq projectile-indexing-method 'alien)
+  (setq projectile-enable-caching t)
+
+  :config
+  ;; Enable projectile globally
+  (projectile-mode +1)
+
+  ;; Remap the command map prefix to C-p
+  :bind-keymap
+  ("C-p" . projectile-command-map))
 
 (global-set-key (kbd "C-s") 'save-buffer)
 (global-set-key (kbd "C-v") 'yank)
@@ -256,23 +302,37 @@
                  (file-name-directory buffer-file-name)
                default-directory)))
     (dired dir)))
-(global-set-key (kbd "s-f") #'dired-current-file-dir)
-(put 'dired-find-alternate-file 'disabled nil)
-(with-eval-after-load 'dired
-  ;; Use RET to open files/directories in the same buffer (replace dired buffer)
-  (define-key dired-mode-map (kbd "RET") #'dired-find-alternate-file)
-  ;; Use ^ to go up a directory, replacing buffer instead of opening new one
-  (define-key dired-mode-map (kbd "^")
-    (lambda ()
-      (interactive)
-      (find-alternate-file ".."))))
+(global-set-key (kbd "s-d") #'dired-current-file-dir)
 
-(use-package dired-git-info
-  :hook (dired-mode . dired-git-info-auto-enable)
-  :bind (:map dired-mode-map
-              (")" . dired-git-info-mode)))
+;; MAX: replace dired buffer with opened file
+;;
+;; (put 'dired-find-alternate-file 'disabled nil)
+;; (with-eval-after-load 'dired
+;;   ;; Use RET to open files/directories in the same buffer (replace dired buffer)
+;;   (define-key dired-mode-map (kbd "RET") #'dired-find-alternate-file)
+;;   ;; Use ^ to go up a directory, replacing buffer instead of opening new one
+;;   (define-key dired-mode-map (kbd "^")
+;;     (lambda ()
+;;       (interactive)
+;;       (find-alternate-file ".."))))
+
+;; MAX: Causes error
+;;
+;; (use-package dired-git-info
+;;   :hook (dired-mode . dired-git-info-auto-enable)
+;;   :bind (:map dired-mode-map
+;;               (")" . dired-git-info-mode)))
+
 (setq dired-auto-revert-buffer t)
 (add-hook 'dired-mode-hook 'auto-revert-mode)
+
+;;(use-package dired-git)
+;;(add-hook 'dired-mode-hook 'dired-git-mode)
+
+(use-package dired-git-info
+  :ensure t
+  :hook (dired-mode . dired-git-info-mode))
+
 
 (use-package diff-hl
   :hook ((dired-mode . diff-hl-dired-mode)
@@ -307,7 +367,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(base16-theme bases16-theme blamer company counsel diff-hl
+   '(base16-theme bases16-theme blamer company counsel diff-hl dired-git
 				  doom-themes eat elixir-mode flycheck gcmh git
 				  go-mode good-scroll gruvbox-theme lsp-ui magit
 				  material-theme monokai-theme multiple-cursors
