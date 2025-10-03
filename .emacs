@@ -461,18 +461,13 @@
             (global-hl-line-mode -1)
             (blink-cursor-mode -1)
             (tooltip-mode -1)
-
             ;; Reduce line spacing for terminal aesthetics
             (setq-local line-spacing 0)
-
             ;; Reset font size only (inherits system/default font)
             (setq-local face-remapping-alist '((default :height 1.0)))
-
             ;; DO NOT override background/foreground of default face
             ;; This keeps vterm ANSI colors untouched
-
             ;; DO NOT set `vterm-color-cursor` — let theme handle it
-
             ;; Optional: thinner bar cursor
             (setq-local cursor-type 'bar)))
 
