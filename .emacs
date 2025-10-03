@@ -380,7 +380,16 @@
 ;; Lock files (those #filename# files that prevent simultaneous editing)
 (setq create-lockfiles nil) ;; Optional: disable if annoying
 
+;; MAX: fix C-d overwrite
+(with-eval-after-load 'cc-mode
+  ;; Unbind electric-c-delete-forward from C-d in cc modes
+  (define-key c-mode-map (kbd "C-d") nil)
+  (define-key c++-mode-map (kbd "C-d") nil)
+  ;; Unbind other keys you find problematic similarly
+)
 
+
+(global-set-key (kbd "M-v") 'eval-expression)
 
 (require 'server)
 (unless (server-running-p)
