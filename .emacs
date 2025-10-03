@@ -47,18 +47,15 @@
 (require 'use-package)
 (setq use-package-always-ensure t)
 
-;; vanilla text binds
 (global-set-key (kbd "C-s") 'save-buffer)
 (global-set-key (kbd "C-v") 'yank)
 (global-set-key (kbd "C-z") 'undo)
 (global-set-key (kbd "C-S-<backspace>") #'backward-kill-word)
 (global-set-key (kbd "C-a") 'mark-whole-buffer)
 
-;; vanilla navigation binds
 (global-set-key (kbd "C-g") #'goto-line)
 (global-set-key (kbd "s-q") #'delete-window)
 
-;; vanilla misc binds
 (global-set-key (kbd "M-v") 'eval-expression)
 
 ;; vanilla cfg binds
@@ -106,6 +103,60 @@
 (winner-mode 1)
 
 (delete-selection-mode 1) ;; typed text replaces selection
+
+;; Optional: unset C-o globally, if you want to fully take it over
+(global-unset-key (kbd "C-o"))
+
+(use-package org-superstar
+  :hook (org-mode . org-superstar-mode)
+  :config
+  (setq org-superstar-headline-bullets-list '("◉" "○" "✸" "✿")
+        org-superstar-leading-bullet " ")
+  (setq org-hide-leading-stars t))
+(add-hook 'org-capture-mode-hook #'org-superstar-mode)
+(add-hook 'org-capture-mode-hook #'visual-line-mode)
+
+(use-package org
+  :ensure t
+  :hook (org-mode . visual-line-mode)
+  :init
+  (setq org-directory "~/org/"
+        org-default-notes-file "~/org/inbox.org"
+        org-ellipsis " ▾"
+        org-hide-emphasis-markers t
+        org-startup-indented t
+        org-pretty-entities t
+        org-confirm-babel-evaluate nil
+        org-todo-keywords
+        '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d)")
+          (sequence "WAIT(w@/!)" "HOLD(h@/!)" "|" "CANCELLED(c@/!)"))
+        org-agenda-files '("~/org")
+        org-capture-templates
+        '(("t" "Todo" entry (file "~/org/inbox.org")
+           "* TODO %?\n  %U\n  %a")
+          ("n" "Note" entry (file "~/org/notes.org")
+           "* %? :note:\n%U\n%a\n")))
+  :config
+  ;; Enable languages in org-babel
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((emacs-lisp . t)
+     (python . t)
+     (shell . t)))
+
+  ;; Define prefix map
+  (define-prefix-command 'my-org-prefix)
+  ;; Bind C-o only in org-mode
+  (define-key org-mode-map (kbd "C-o") 'my-org-prefix)
+
+  ;; Subcommands under C-o prefix
+  (define-key my-org-prefix (kbd "a") 'org-agenda)
+  (define-key my-org-prefix (kbd "c") 'org-capture)
+  (define-key my-org-prefix (kbd "t") 'org-todo)
+  (define-key my-org-prefix (kbd "l") 'org-store-link)
+  (define-key my-org-prefix (kbd "s") 'org-schedule)
+  (define-key my-org-prefix (kbd "d") 'org-deadline)
+  (define-key my-org-prefix (kbd "e") 'org-export-dispatch))
 
 (defun esc-deselect-or-winner-undo ()
   "If region is active, deactivate it. Otherwise, run `winner-undo`."
@@ -363,7 +414,7 @@
 )
 
 (require 'server)
-(unless (server-running-p)
+(unless (server-running-p))
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -375,7 +426,7 @@
 				  doom-themes eat elixir-mode flycheck gcmh git
 				  go-mode good-scroll gruvbox-theme lsp-ui magit
 				  material-theme monokai-theme multiple-cursors
-				  projectile solarized-theme super-save
+				  org-superstar projectile solarized-theme super-save
 				  typescript-mode undo-tree vterm web-mode yaml-mode
 				  yasnippet zenburn-theme zig-mode)))
 (custom-set-faces
