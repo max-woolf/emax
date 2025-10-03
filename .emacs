@@ -44,9 +44,47 @@
 (setq package-enable-at-startup nil)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 (package-initialize)
-
 (require 'use-package)
 (setq use-package-always-ensure t)
+
+;; vanilla text binds
+(global-set-key (kbd "C-s") 'save-buffer)
+(global-set-key (kbd "C-v") 'yank)
+(global-set-key (kbd "C-z") 'undo)
+(global-set-key (kbd "C-S-<backspace>") #'backward-kill-word)
+(global-set-key (kbd "C-a") 'mark-whole-buffer)
+
+;; vanilla navigation binds
+(global-set-key (kbd "C-g") #'goto-line)
+(global-set-key (kbd "s-q") #'delete-window)
+
+;; vanilla misc binds
+(global-set-key (kbd "M-v") 'eval-expression)
+
+;; vanilla cfg binds
+(defun reload-cfg ()
+  "Reload Emacs configuration file."
+  (interactive)
+  (load-file user-init-file)
+  (message "cfg reloaded :3"))
+(global-set-key (kbd "s-r") 'reload-cfg)  ;; reload cfg
+(defun open-cfg ()
+  "Open my init file."
+  (interactive)
+  (find-file user-init-file))
+(global-set-key (kbd "s-c") #'open-cfg)
+
+;; vanilla gui
+(tool-bar-mode 0)
+(menu-bar-mode 0)
+(scroll-bar-mode 0)
+(column-number-mode 1)
+(show-paren-mode 1)
+(global-hl-line-mode 1)
+(global-display-line-numbers-mode 1)
+(context-menu-mode 1)
+(setq inhibit-startup-message t)     ;; Disable the startup message
+(setq initial-scratch-message nil)   ;; Remove message in *scratch* buffer
 
 ;; themes
 (use-package monokai-theme :ensure t)
@@ -55,7 +93,6 @@
 (use-package zenburn-theme :ensure t)
 (use-package material-theme :ensure t :config)
 (use-package base16-theme :ensure t :config)
-
 (load-theme 'base16-monokai t)
 (set-face-foreground 'font-lock-comment-face "green")
 (set-face-foreground 'font-lock-comment-delimiter-face "green")
@@ -66,28 +103,7 @@
 (use-package counsel :ensure t)
 (global-set-key (kbd "M-t") 'counsel-load-theme)
 
-(defun reload-init-file ()
-  "Reload Emacs configuration file."
-  (interactive)
-  (load-file user-init-file)
-  (message "cfg reloaded :3"))
-(global-set-key (kbd "s-r") 'reload-init-file)  ;; reload cfg
-
-;; gui
-(tool-bar-mode 0)
-(menu-bar-mode 0)
-(scroll-bar-mode 0)
-(column-number-mode 1)
-(show-paren-mode 1)
-(global-hl-line-mode 1)
-(global-display-line-numbers-mode 1)
-(context-menu-mode 1)
-
-(setq inhibit-startup-message t)     ;; Disable the startup message
-(setq initial-scratch-message nil)   ;; Remove message in *scratch* buffer
-
 (winner-mode 1)
-;;(global-set-key (kbd "<escape>") #'winner-undo)
 
 (delete-selection-mode 1) ;; typed text replaces selection
 
@@ -172,22 +188,6 @@
   ;; Remap the command map prefix to C-p
   :bind-keymap
   ("C-p" . projectile-command-map))
-
-(global-set-key (kbd "C-s") 'save-buffer)
-(global-set-key (kbd "C-v") 'yank)
-(global-set-key (kbd "C-z") 'undo)
-;;(global-set-key (kbd "C-<backspace>") #'backward-kill-word)
-(global-set-key (kbd "C-S-<backspace>") #'backward-kill-word)
-(global-set-key (kbd "C-a") 'mark-whole-buffer)
-(global-set-key (kbd "C-g") #'goto-line)
-
-(global-set-key (kbd "s-q") #'delete-window)
-
-(defun open-config ()
-  "Open my init file."
-  (interactive)
-  (find-file user-init-file))
-(global-set-key (kbd "s-c") #'open-config)
 
 (defun copy-region-or-line ()
   "Copy region if active, else copy the current line."
@@ -310,41 +310,18 @@
     (dired dir)))
 (global-set-key (kbd "s-d") #'dired-current-file-dir)
 
-;; MAX: replace dired buffer with opened file
-;;
-;; (put 'dired-find-alternate-file 'disabled nil)
-;; (with-eval-after-load 'dired
-;;   ;; Use RET to open files/directories in the same buffer (replace dired buffer)
-;;   (define-key dired-mode-map (kbd "RET") #'dired-find-alternate-file)
-;;   ;; Use ^ to go up a directory, replacing buffer instead of opening new one
-;;   (define-key dired-mode-map (kbd "^")
-;;     (lambda ()
-;;       (interactive)
-;;       (find-alternate-file ".."))))
-
-;; MAX: Causes error
-;;
-;; (use-package dired-git-info
-;;   :hook (dired-mode . dired-git-info-auto-enable)
-;;   :bind (:map dired-mode-map
-;;               (")" . dired-git-info-mode)))
-
 (setq dired-auto-revert-buffer t)
 (add-hook 'dired-mode-hook 'auto-revert-mode)
 
-;;(use-package dired-git)
-;;(add-hook 'dired-mode-hook 'dired-git-mode)
-
+;; git
 (use-package dired-git-info
   :ensure t
   :hook (dired-mode . dired-git-info-mode))
-
 (use-package diff-hl
   :hook ((dired-mode . diff-hl-dired-mode)
          (magit-post-refresh . diff-hl-magit-post-refresh))
   :config
   (global-diff-hl-mode))
-
 (use-package blamer
   :defer t
   :custom
@@ -362,21 +339,18 @@
 (require 'midnight)
 (midnight-mode 1)
 
+;; > FILES
 ;; Directory to store backup and autosave files
 (defvar my-auxiliary-files-dir (expand-file-name "~/.emacs.d/auxiliary/"))
-
 ;; Make sure the directory exists
 (unless (file-exists-p my-auxiliary-files-dir)
   (make-directory my-auxiliary-files-dir t))
-
 ;; Backup files
 (setq backup-directory-alist `(("." . ,my-auxiliary-files-dir)))
 (setq backup-by-copying t) ;; To avoid issues with symlinks
-
 ;; Autosave files
 (setq auto-save-file-name-transforms
       `((".*" ,(concat my-auxiliary-files-dir "/\\1") t)))
-
 ;; Lock files (those #filename# files that prevent simultaneous editing)
 (setq create-lockfiles nil) ;; Optional: disable if annoying
 
@@ -388,12 +362,8 @@
   ;; Unbind other keys you find problematic similarly
 )
 
-
-(global-set-key (kbd "M-v") 'eval-expression)
-
 (require 'server)
 (unless (server-running-p)
-  (server-start))
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
