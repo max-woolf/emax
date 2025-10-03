@@ -1,412 +1,305 @@
 
-;;
-;; >_<
-;; emax
-;;
-;; emacs keys
-;;   'C-' -> Control
-;;   'M-' -> Alt
-;;   's-' -> Super
-;;   'S-' -> Shift
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; OwO
 ;;
+;; emax 2.0
+;;
+;;  _______________________________________________________________ 
+;; / No man shall send me to Hades before my time, / and no man, I \
+;; | promise, has ever escaped his fate / from the moment that he  |
+;; \ was born, whether brave man or coward.                        /
+;;  --------------------------------------------------------------- 
+;;      \                                             
+;;       \                                            
+;;        \ ▄▄▄▄▄▄▄▄▄   ▄                             
+;;       ▀█▄██▄▄██▄▄█▄▄▄██                            
+;;       ▄▄▄███▄▄███▄▄██▄██ █▄█ ▄▄                    
+;;      ▄▀███▄▄██▄▄▄███████████▄██                    
+;;       ███▄▄▄▄▄█████████▀█████▄▀                    
+;;      ██▄▀██▄███▄████████████▄▄▄▄                   
+;;     ▀▀▀  █▄███▄████▄█▄██▄███████                   
+;;          █▄█▄█▄▄▄▄▄█▄▄████▄████▄▄▄▄▄▄▄▄▄▄▄         
+;;          ▀▄▄█████████▄█▄█▄█▄█▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄       
+;;             ▀▀▀█▄▄▄▄█▄███▄██▄▄▄▄▄▄▄▄▄██▄█▄█▄▀      
+;;               ███▄███████▄██▄▄▄▄▀▀▄█▄█▄███▄██      
+;;               ███████▄▄██▄▄███     ████████▄██     
+;;               ██████████▄█▄▄███    ██▄██████▄█▄    
+;;                ████▄▄███▄▄▄▄███    █▀██████████    
+;;                ▄▄███▄██▄▄▄███       ████████▄██   
+;;                 █▄████▀▀▄▄▄▄█▄▄▄     ▀▄▀▄██████▀▄  
+;;                 ██████   ██▄▄███      ▀ ▀▄▄███▄▄   
+;;                ███████   ██████▄▄         ▀▄██▄█▄▄ 
+;;               ▄▄██████   ████████           ▀▀▀▀▀▀▀
+;;              █▄███████   ███████▄▄                 
+;;              ▀▀█▄███▄▀   ▀▀▀██████                 
+;;                ▀▀▀▀▀▀       ▀▀▀▀▀▀                 
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; disable gui
+;; package manager
+(require 'package)
+(setq package-enable-at-startup nil)
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+(package-initialize)
+
+(require 'use-package)
+(setq use-package-always-ensure t)
+
+;; themes
+(use-package monokai-theme :ensure t)
+(use-package gruvbox-theme :ensure t)
+(use-package solarized-theme :ensure t)
+(use-package zenburn-theme :ensure t)
+(use-package material-theme :ensure t :config)
+(use-package base16-theme :ensure t :config)
+
+(load-theme 'base16-monokai t)
+(set-face-foreground 'font-lock-comment-face "green")
+(set-face-foreground 'font-lock-comment-delimiter-face "green")
+
+(use-package ivy :ensure t)
+(ivy-mode 1)
+
+(use-package counsel :ensure t)
+(global-set-key (kbd "M-t") 'counsel-load-theme)
+
+;; gui
 (tool-bar-mode 0)
 (menu-bar-mode 0)
 (scroll-bar-mode 0)
+(column-number-mode 1)
+(show-paren-mode 1)
+(global-hl-line-mode 1)
+(global-display-line-numbers-mode 1)
+(context-menu-mode 1)
 
-;; settings - general
-(column-number-mode 1)                             ;; show line num on bottom
-(show-paren-mode 1)                                ;; highlights ()
-(global-hl-line-mode 1)                            ;; highlight current line
-(global-display-line-numbers-mode 1)               ;; show line num on left
-;;(load-theme 'doom-dark+ t)                         ;; load default theme
-(setq shift-select-mode t)                         ;; holding shift and using arrows selects stuff
-(recentf-mode 1)                                   ;; recent files
-(savehist-mode 1)                                  ;; command history, search inputs, etc
-(save-place-mode 1)                                ;; remembers cursor position in files
-(global-auto-revert-mode 1)                        ;; reload when file changed on disk
-(delete-selection-mode 1)                          ;; typed text replaces selection
-(winner-mode 1)                                    ;; undo/redo of window configurations
-(desktop-save-mode 1)                              ;; saves and restores emacs sessions
-(editorconfig-mode 1)                              ;; .editorconfig
-(context-menu-mode 1)                              ;; right-click for context menu
+(setq inhibit-startup-message t)     ;; Disable the startup message
+(setq initial-scratch-message nil)   ;; Remove message in *scratch* buffer
 
-;; settings - keys
-;;
-;; > gnome key repeat (run this on terminal)
-;;
-;;     gsettings set org.gnome.desktop.peripherals.keyboard delay 300
-;;     gsettings set org.gnome.desktop.peripherals.keyboard repeat-interval 30
-;;
-(setq auto-repeat-mode t)                          ;; Enable key repeat
-(setq repeat-delay 0.005)                          ;; Short delay before repeating starts
-(setq repeat-interval 0.005)                       ;; Time between repeats
-(setq echo-keystrokes 0.005)                       ;; Reduce keystroke echo delay
-(setq jit-lock-defer-time 0)                       ;; No delay in font-lock (helps responsiveness)
-(setq auto-repeat-mode nil)                        ;; disable Emacs repeat mode
-;; optional for Emacs 29+
-(when (boundp 'keyboard-repeat-rate)
-  (setq keyboard-repeat-rate 10))
+(winner-mode 1)
+;;(global-set-key (kbd "<escape>") #'winner-undo)
 
-;; settings - indentation
+(delete-selection-mode 1) ;; typed text replaces selection
+
+(defun esc-deselect-or-winner-undo ()
+  "If region is active, deactivate it. Otherwise, run `winner-undo`."
+  (interactive)
+  (if (use-region-p)
+      (deactivate-mark)
+    (when (fboundp 'winner-undo)
+      (winner-undo))))
+(global-set-key (kbd "<escape>") #'esc-deselect-or-winner-undo)
+
+(setq select-enable-clipboard t)
+
+(editorconfig-mode 1)
 (setq-default indent-tabs-mode t)
 (setq-default tab-width 4)
 
-;; settings - scroll
-(setq scroll-margin 5)
-(setq hscroll-step 1)
-(setq scroll-step 1)
-(setq scroll-conservatively 101)
-(setq auto-window-vscroll nil)
-(setq scroll-preserve-screen-position t)
-
-;; binds - general
-(global-set-key (kbd "C-s") 'save-buffer)				;; save file
-(global-set-key (kbd "C-v") 'yank)						;; paste
-(define-prefix-command 'my-C-c-map)
-(global-set-key (kbd "C-c") 'my-C-c-map)
-(global-set-key (kbd "C-c C-c") 'my/copy-or-cancel)
-(global-set-key (kbd "C-c c") 'my/copy-or-cancel)
-;;(global-set-key (kbd "C-c C-c") 'kill-ring-save)		;; copy
-(global-set-key (kbd "C-z") 'undo)						;; undo
-(global-set-key (kbd "C-r") 'undo-tree-redo)			;; redo
-(global-set-key (kbd "M-r") 'reload-init-file)			;; reload cfg
-(global-set-key (kbd "s-r") 'reload-init-file)			;; reload cfg
-(global-set-key (kbd "C-a") 'mark-whole-buffer)			;; select all
-(global-set-key (kbd "M-c") 'open-config)				;; open cfg
-(global-set-key (kbd "M-t") 'counsel-load-theme)	    ;; open theme menu
-(global-set-key (kbd "C-d") 'kill-whole-line)			;; cut line
-(global-set-key (kbd "C-c s") 'copy-current-line)		;; copy line
-(global-set-key (kbd "C-c C-s") 'copy-current-line)		;; copy line
-(global-set-key (kbd "TAB") 'indent-for-tab-command)	;; make TAB do indentation
-(global-set-key (kbd "C-c v") 'yank-below)				;; paste below
-;;(global-set-key (kbd "s-t") 'open-eat)                ;; open terminal  
-(global-set-key (kbd "s-q") 'save-and-quit-buffer)      ;; save and quit
-(global-set-key (kbd "C-l") 'comment-dwim)              ;; comment out selected
-(global-set-key (kbd "C-l") 'my/comment-or-uncomment)
-(global-set-key (kbd "C-k") #'kill-this-buffer)         ;; kill buffer
-(global-set-key (kbd "<escape>") #'winner-undo)         ;; go back
-(global-set-key (kbd "C-<escape>") #'my/abort-with-message)
-
-;; binds - movement
-(global-set-key (kbd "C-<left>") 'backward-word)
-(global-set-key (kbd "C-<right>") 'forward-word)
-(global-set-key (kbd "C-<up>") 'backward-paragraph)
-(global-set-key (kbd "C-<down>") 'forward-paragraph)
-;; move to end of line
-(global-set-key (kbd "M-<left>") 'move-beginning-of-line)
-(global-set-key (kbd "M-<right>") 'move-end-of-line)
-;; move to end of buffer
-;;(global-set-key (kbd "M-<up>") 'beginning-of-buffer)
-;;(global-set-key (kbd "M-<down>") 'end-of-buffer)
-
-;; binds - search
-(global-set-key (kbd "C-f") 'swiper)        ;; fuzzy search in current buffer
-(global-set-key (kbd "C-M-f") 'counsel-rg)  ;; fuzzy search across project (ripgrep)
-(global-set-key (kbd "M-x") 'counsel-M-x)   ;; fuzzy M-x
-(global-set-key (kbd "s-b") 'counsel-switch-buffer) ;; view buffers
-(global-set-key (kbd "C-b") 'counsel-switch-buffer) ;; view buffers
-
-;; binds - tools
-;;(global-set-key (kbd "s-t") 'open-eat)
-(global-set-key (kbd "M-g") #'magit-status)
-
-;; binds - split window
-(global-set-key (kbd "C-s-<left>")  (lambda () (interactive) (split-window-right)  (windmove-right)))
-(global-set-key (kbd "C-s-<right>") (lambda () (interactive) (split-window-right)  (windmove-right)))
-(global-set-key (kbd "C-s-<up>")    (lambda () (interactive) (split-window-below)  (windmove-down)))
-(global-set-key (kbd "C-s-<down>")  (lambda () (interactive) (split-window-below)  (windmove-down)))
-;; switch windows
-(global-set-key (kbd "M-s-<left>") 'windmove-left)
-(global-set-key (kbd "M-s-<right>") 'windmove-right)
-(global-set-key (kbd "M-s-<up>") 'windmove-up)
-(global-set-key (kbd "M-s-<down>") 'windmove-down)
-;; manip windows 
-(global-set-key (kbd "s-q") 'delete-window)
-
-;; binds - eglot (lsp)
-(define-prefix-command 'my-eglot-prefix)
-(global-set-key (kbd "C-e") 'my-eglot-prefix)
+(use-package eglot :ensure t)
+(add-hook 'c-mode-hook' #'eglot-ensure)
+(add-hook 'c++-mode-hook' #'eglot-ensure)
+(add-hook 'python-mode-hook' #'eglot-ensure)
+(add-to-list 'eglot-server-programs '(c-mode . ("clangd")))
+(add-to-list 'eglot-server-programs '(c++-mode . ("clangd")))
+(add-to-list 'eglot-server-programs '(nim-mode . ("nimlsp")))
+(add-to-list 'eglot-server-programs '((js-mode js2-mode typescript-mode tsx-ts-mode) . ("typescript-language-server" "--stdio")))
+(add-to-list 'eglot-server-programs '((html-mode web-mode) . ("vscode-html-language-server" "--stdio")))
+(add-to-list 'eglot-server-programs '((css-mode scss-mode less-css-mode) . ("vscode-css-language-server" "--stdio")))
+(add-to-list 'eglot-server-programs '(go-mode . ("gopls")))
+(add-to-list 'eglot-server-programs '(elixir-mode . ("elixir-ls")))
+(add-to-list 'eglot-server-programs '(haskell-mode . ("haskell-language-server-wrapper" "--lsp")))
 (with-eval-after-load 'eglot
-  (define-key eglot-mode-map (kbd "C-e r") 'eglot-rename)                ;; rename symbol
-  (define-key eglot-mode-map (kbd "C-e a") 'eglot-code-actions)          ;; code actions
-  (define-key eglot-mode-map (kbd "C-e f") 'eglot-format-buffer)         ;; format buffer
-  (define-key eglot-mode-map (kbd "C-e d") 'xref-find-definitions)       ;; go to definition
-  (define-key eglot-mode-map (kbd "C-e b") 'xref-pop-marker-stack)       ;; back from definition
-  (define-key eglot-mode-map (kbd "C-e h") 'eldoc)                       ;; show hover doc
-  (define-key eglot-mode-map (kbd "C-e i") 'eglot-find-implementation)   ;; find implementation
-  (define-key eglot-mode-map (kbd "C-e t") 'eglot-find-typeDefinition))  ;; find type
+  ;; Create a keymap for the prefix
+  (define-prefix-command 'eglot-prefix-map)
+  ;; Bind C-e as the Eglot prefix inside eglot-mode
+  (define-key eglot-mode-map (kbd "C-e") 'eglot-prefix-map)
+  ;; Bind Eglot commands under the prefix
+  (define-key eglot-prefix-map (kbd "r") 'eglot-rename)
+  (define-key eglot-prefix-map (kbd "a") 'eglot-code-actions)
+  (define-key eglot-prefix-map (kbd "f") 'eglot-format)
+  (define-key eglot-prefix-map (kbd "h") 'eldoc)
+  (define-key eglot-prefix-map (kbd "o") 'eglot-code-action-organize-imports))
 
-;; binds - company (autocomplete)
-(with-eval-after-load 'company
-  (define-key company-active-map (kbd "<tab>") 'company-complete-selection)
-  (define-key company-active-map (kbd "M-n") 'company-select-next)
-  (define-key company-active-map (kbd "M-p") 'company-select-previous))
-(with-eval-after-load 'company
-  ;; Unbind arrow keys in company completion popup
-  (define-key company-active-map (kbd "<down>") nil)
-  (define-key company-active-map (kbd "<up>") nil)
-  (define-key company-active-map (kbd "<left>") nil)
-  (define-key company-active-map (kbd "<right>") nil))
+(use-package company :ensure t :init)
+(global-company-mode 1)
 
+(add-hook 'eglot-managed-mode-hook #'company-mode)
 
-;; functions
-(defun reload-init-file ()
-  "Reload Emacs configuration file."
-  (interactive)
-  (load-file user-init-file)
-  (message "cfg reloaded :3"))
+(global-set-key (kbd "C-s") 'save-buffer)
+(global-set-key (kbd "C-v") 'yank)
+(global-set-key (kbd "C-z") 'undo)
+(global-set-key (kbd "C-S-z") 'undo-tree-redo)
+;;(global-set-key (kbd "C-<backspace>") #'backward-kill-word)
+(global-set-key (kbd "C-S-<backspace>") #'backward-kill-word)
+(global-set-key (kbd "C-a") 'mark-whole-buffer)
+(global-set-key (kbd "C-g") #'goto-line)
+
+(global-set-key (kbd "s-q") #'delete-window)
 
 (defun open-config ()
   "Open my init file."
   (interactive)
   (find-file user-init-file))
+(global-set-key (kbd "s-c") #'open-config)
 
-(defun copy-current-line ()
-  "Copy the current line to the kill ring."
-  (interactive)
-  (kill-ring-save (line-beginning-position) (line-beginning-position 2))
-  (message "Line copied!"))
-
-(defun yank-below ()
-  "Paste/yank text on a new line below the current line."
-  (interactive)
-  (end-of-line)
-  (newline)
-  (yank))
-
-(defun save-and-quit-buffer ()
-  "Save the current buffer and kill it."
-  (interactive)
-  (when (buffer-file-name)
-    (save-buffer))
-  (kill-this-buffer))
-
-(defun my/copy-or-cancel ()
-  "Copy region if active, otherwise cancel (like `keyboard-quit`)."
+(defun copy-region-or-line ()
+  "Copy region if active, else copy the current line."
   (interactive)
   (if (use-region-p)
-      (progn
-        (kill-ring-save (region-beginning) (region-end))
-        (message "Copied"))
-    (keyboard-quit)))
+      (kill-ring-save (region-beginning) (region-end))
+    (kill-ring-save (line-beginning-position) (line-end-position))
+    (message "Copied line")))
+(with-eval-after-load 'winner
+ (define-key winner-mode-map (kbd "C-c <left>") nil)
+ (define-key winner-mode-map (kbd "C-c <right>") nil))
+(define-key emacs-lisp-mode-map (kbd "C-c C-b") nil)
+(define-key emacs-lisp-mode-map (kbd "C-c C-e") nil)
+(define-key emacs-lisp-mode-map (kbd "C-c C-f") nil)
+(global-set-key (kbd "C-c") nil)
+(define-key global-map (kbd "C-c") nil)
+;; Override C-c
+(defvar my-override-c-c-map (make-sparse-keymap))
+(define-key my-override-c-c-map (kbd "C-c") #'copy-region-or-line)
+(define-minor-mode my-override-c-c-mode
+  "Override C-c."
+  :global t
+  :keymap my-override-c-c-map)
+(my-override-c-c-mode 1)
 
-(defun open-eat ()
-  "Open EAT terminal in a buffer."
+(use-package which-key :ensure t :init)
+(which-key-mode 1)
+
+(use-package vterm :ensure t
+  :hook (vterm-mode . (lambda () (setq-local global-hl-line-mode nil))))
+(global-set-key (kbd "s-t") #'vterm)
+
+(defun cut-region-or-line ()
+  "Cut region if active, otherwise cut the current line like `dd`."
   (interactive)
-  (eat "*eat*"))
+  (if (use-region-p)
+      (kill-region (region-beginning) (region-end))
+    (kill-whole-line)))
+(global-set-key (kbd "C-d") 'cut-region-or-line)
 
-(defun my/comment-or-uncomment ()
+(use-package swiper :ensure t)
+(global-set-key (kbd "C-f") 'swiper)
+(global-set-key (kbd "C-M-f") 'counsel-rg)
+(global-set-key (kbd "M-x") 'counsel-M-x)
+(global-set-key (kbd "C-b") 'counsel-switch-buffer)
+
+(defun select-current-line ()
+  "Select the current line without cutting or killing."
+  (interactive)
+  (beginning-of-line)
+  (push-mark (line-end-position) nil t))
+(global-set-key (kbd "C-w") #'my/select-current-line)
+
+(use-package undo-tree :ensure t :init)
+(global-undo-tree-mode 1)
+
+(defun move-up-to-line-end ()
+  "Move cursor up one line and go to end of that line."
+  (interactive)
+  (forward-line -1)
+  (end-of-line))
+(defun move-down-to-line-end ()
+  "Move cursor down one line and go to end of that line."
+  (interactive)
+  (forward-line 1)
+  (end-of-line))
+(global-set-key (kbd "M-<up>") #'move-up-to-line-end)
+(global-set-key (kbd "M-<down>") #'move-down-to-line-end)
+
+(defun delete-current-line ()
+  "Delete the current line without copying it to the kill ring, safe for last line."
+  (interactive)
+  (let ((start (line-beginning-position))
+        (end (min (1+ (line-end-position)) (point-max))))
+    (delete-region start end)))
+(global-set-key (kbd "C-<backspace>") #'delete-current-line)
+
+(global-set-key (kbd "s-q") 'delete-window)
+
+(defun comment-or-uncomment ()
   "Comment or uncomment current line or active region."
   (interactive)
   (if (use-region-p)
       (comment-or-uncomment-region (region-beginning) (region-end))
     (comment-line 1)))
+(global-set-key (kbd "C-l") 'comment-or-uncomment)
 
-(defun my/abort-with-message ()
+(defun other-window-backward ()
+  "Move to the previous window."
   (interactive)
-  (message "Abort triggered!")
-  (keyboard-quit))
+  (other-window -1))
+(defun other-window-forward ()
+  (interactive)
+  (other-window +1))
+(global-set-key (kbd "s-e") #'other-window-forward)
 
+(use-package gcmh :ensure t :config)
+(gcmh-mode 1)
 
+(setq server-window 'pop-to-buffer server-switch-hook nil)
+(defun open-in-current-window ()
+  "Force next emacsclient file to open in current window."
+  (interactive)
+  (let ((server-window 'switch-to-buffer))
+    (server-edit)))
 
-;; ;; START: programming
+(defun dired-current-file-dir ()
+  "Open dired at the current file's directory."
+  (interactive)
+  (let ((dir (if buffer-file-name
+                 (file-name-directory buffer-file-name)
+               default-directory)))
+    (dired dir)))
+(global-set-key (kbd "s-f") #'dired-current-file-dir)
+(put 'dired-find-alternate-file 'disabled nil)
+(with-eval-after-load 'dired
+  ;; Use RET to open files/directories in the same buffer (replace dired buffer)
+  (define-key dired-mode-map (kbd "RET") #'dired-find-alternate-file)
+  ;; Use ^ to go up a directory, replacing buffer instead of opening new one
+  (define-key dired-mode-map (kbd "^")
+    (lambda ()
+      (interactive)
+      (find-alternate-file ".."))))
 
-(setq lisp-indent-offset 2)
-(setq elisp-basic-offset 2)
+(use-package dired-git-info
+  :hook (dired-mode . dired-git-info-auto-enable)
+  :bind (:map dired-mode-map
+              (")" . dired-git-info-mode)))
+(setq dired-auto-revert-buffer t)
+(add-hook 'dired-mode-hook 'auto-revert-mode)
 
-(defun c-tabs-hook ()
-  ;; Set basic indentation level to 4 spaces
-  (c-set-style "linux")
-  (setq c-basic-offset 4)          ;; Indentation level
-  (setq c-indent-level 4)          ;; Indentation level for C
-  (setq indent-tabs-mode t)        ;; Use tabs instead of spaces
-  (setq tab-width 4)               ;; Set tab width to 4
-  (setq c-tab-always-indent t)     ;; Always indent with tab
-  (setq c++-tab-always-indent t)   ;; Always indent with tab for C++
-  (c-set-offset 'arglist-intro '+)
-  (c-set-offset 'arglist-close 0)
-  (c-set-offset 'substatement-open 0)
-  (c-set-offset 'innamespace 0)    ;; No extra indentation for namespaces
-  (setq-local show-trailing-whitespace t)) ;; Show trailing whitespace
-
-(add-hook 'c-mode-hook 'c-tabs-hook)
-
-;; END
-
-;; ;; START: package manager
-
-;; init package.el and add MELPA
-(require 'package)
-
-(setq package-enable-at-startup nil) ;; Prevent double initialization
-(add-to-list 'package-archives
-             '("melpa" . "https://melpa.org/packages/") t)
-
-(package-initialize)
-
-;; Optional: refresh package contents if none are available
-(unless package-archive-contents
-  (package-refresh-contents))
-
-;; If you want, you can install/use-package automatically:
-(unless (package-installed-p 'use-package)
-  (package-install 'use-package))
-
-(require 'use-package)
-(setq use-package-always-ensure t) ;; Always install missing packages
-
-;; END
-
-;; ;; START: Packages
-
-;; themes
-(use-package doom-themes
-  :ensure t
+(use-package diff-hl
+  :hook ((dired-mode . diff-hl-dired-mode)
+         (magit-post-refresh . diff-hl-magit-post-refresh))
   :config
-  ;; Optional: extra doom theme configs for org etc.
-  (doom-themes-org-config))
-(use-package doom-themes
-  :ensure t)
-(use-package gruvbox-theme
-  :ensure t)
-(use-package monokai-theme
-  :ensure t)
-(use-package solarized-theme
-  :ensure t)
-(use-package zenburn-theme
-  :ensure t)
-(use-package material-theme
-  :ensure t
-  :config)
-  
-(use-package ivy
-  :ensure t
-  :init (ivy-mode 1)
-  :config
-  (setq ivy-re-builders-alist '((t . ivy--regex-fuzzy)))
-  (setq ivy-use-virtual-buffers t)
-  (setq enable-recursive-minibuffers t))
+  (global-diff-hl-mode))
 
-(use-package counsel
-  :ensure t)
+(use-package blamer
+  :defer t
+  :custom
+  (blamer-idle-time 0.5)
+  (blamer-min-offset 70)
+  (blamer-prettify-time-p t)
+  (blamer-type 'visual)  ;; Show as overlay
+  :custom-face
+  (blamer-face ((t :foreground "#7a88cf"
+                   :background nil
+                   :height 0.9
+                   :italic t)))
+  :hook (prog-mode . blamer-mode))
 
-(use-package swiper
-  :ensure t)
+(require 'midnight)
+(midnight-mode 1)
 
-;; redo
-(use-package undo-tree
-  :ensure t
-  :init
-  (global-undo-tree-mode))
-
-;; which key?
-(use-package which-key
-  :ensure t
-  :init
-  (which-key-mode)
-  :config
-  (setq which-key-idle-delay 0.3)) ;; adjust delay
-
-;; autosave
-(use-package super-save
-  :ensure t
-  :config
-  (super-save-mode +1)
-  (setq super-save-auto-save-when-idle t)      ;; enable idle auto-save
-  (setq super-save-idle-duration 3)            ;; seconds of idle before save
-  (setq super-save-silent t))                  ;; suppress messages
-
-;; smooth scroll
-(use-package good-scroll
-  :ensure t
-  :config
-  (good-scroll-mode 1))
-
-;; terminal emulator
-;;(use-package vterm
-;;  :ensure t)
-
-(use-package eat
-  :ensure t
-  :hook (eshell-load . eat-eshell-mode)
-  :config
-  (eat-eshell-mode 1))
-
-;; lsp
-(use-package eglot
-  :ensure t
-  :hook
-  ((c-mode c++-mode python-mode go-mode js-mode typescript-mode) . eglot-ensure)
-  :config
-  (setq eglot-autoshutdown t)
-  (add-to-list 'eglot-server-programs
-               '(c-mode . ("clangd")))
-  (add-to-list 'eglot-server-programs
-               '(c++-mode . ("clangd"))))
-
-;; autocomplete
-(use-package company
-  :ensure t
-  :init
-  (global-company-mode 1)  ;; enable everywhere
-  :config
-  (setq company-idle-delay 0.1              ;; delay before suggestions popup
-        company-minimum-prefix-length 1     ;; start completing after 1 char
-        company-show-numbers t              ;; show quick selection numbers
-        company-tooltip-align-annotations t ;; align annotations (like types)
-        company-selection-wrap-around t))   ;; wrap around suggestion list
-
-(add-hook 'eglot-managed-mode-hook #'company-mode)
-
-;; git
-(use-package magit
-  :ensure t) 
-
-
-;; (use-package lsp-mode
-;;   :ensure t
-;;   :hook ((c-mode c++-mode python-mode js-mode typescript-mode) . lsp)
-;;   :commands lsp
-;;   :config
-;;   (setq lsp-enable-snippet t
-;;         lsp-keymap-prefix "C-e"  ;; Or any prefix you want
-;;         lsp-prefer-flymake nil)) ;; Use flycheck instead of flymake
-
-;; (use-package lsp-ui
-;;   :ensure t
-;;   :after lsp-mode
-;;   :commands lsp-ui-mode
-;;   :hook (lsp-mode . lsp-ui-mode)
-;;   :config
-;;   (setq lsp-ui-doc-enable t
-;;         lsp-ui-doc-position 'at-point
-;;         lsp-ui-sideline-enable t
-;;         lsp-ui-sideline-show-code-actions t
-;;         lsp-ui-sideline-show-diagnostics t
-;;         lsp-ui-doc-show-with-cursor t))
-
-;; (use-package flycheck
-;;   :ensure t
-;;   :init (global-flycheck-mode))
-
-
-
-;; END
-
-;; ;; START: servers
-
-;; start server mode
 (require 'server)
 (unless (server-running-p)
   (server-start))
-
-;; END
-
-;; ;; START: Auto-generated
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -414,15 +307,16 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-	'(counsel doom-themes eat gruvbox-theme monokai-theme solarized-theme
-	   super-save undo-tree zenburn-theme)))
+   '(base16-theme bases16-theme blamer company counsel diff-hl
+				  doom-themes eat elixir-mode flycheck gcmh git
+				  go-mode good-scroll gruvbox-theme lsp-ui magit
+				  material-theme monokai-theme multiple-cursors
+				  projectile solarized-theme super-save
+				  typescript-mode undo-tree vterm web-mode yaml-mode
+				  yasnippet zenburn-theme zig-mode)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
-
-;; END
-
-;; == FINAL
