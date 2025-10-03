@@ -104,6 +104,20 @@
 
 (delete-selection-mode 1) ;; typed text replaces selection
 
+;; smooth scroll
+(use-package good-scroll
+  :ensure t
+  :config
+  (good-scroll-mode 1))
+(setq good-scroll-step 8)
+(setq good-scroll-duration 0.2)
+(setq scroll-conservatively 101
+	  scroll-margin 8
+	  scroll-step 1
+	  scroll-preserve-screen-position t)
+(setq mouse-wheel-scroll-amount '(1 ((shift) .1)))
+(setq mouse-wheel-progressive-speed nil)
+
 (defun esc-deselect-or-winner-undo ()
   "If region is active, deactivate it. Otherwise, run `winner-undo`."
   (interactive)
@@ -165,6 +179,16 @@
 
 (use-package company :ensure t :init)
 (global-company-mode 1)
+(with-eval-after-load 'company
+  (define-key company-active-map (kbd "<tab>") 'company-complete-selection)
+  (define-key company-active-map (kbd "M-n") 'company-select-next)
+  (define-key company-active-map (kbd "M-p") 'company-select-previous))
+(with-eval-after-load 'company
+  ;; Unbind arrow keys in company completion popup
+  (define-key company-active-map (kbd "<down>") nil)
+  (define-key company-active-map (kbd "<up>") nil)
+  (define-key company-active-map (kbd "<left>") nil)
+  (define-key company-active-map (kbd "<right>") nil))
 
 (add-hook 'eglot-managed-mode-hook #'company-mode)
 
@@ -173,15 +197,12 @@
   :init
   ;; Optional: define project search paths
   (setq projectile-project-search-path '("~/projects/" "~/code/" "~/mygit/"))
-
   ;; Optional: faster indexing and caching
   (setq projectile-indexing-method 'alien)
   (setq projectile-enable-caching t)
-
   :config
   ;; Enable projectile globally
   (projectile-mode +1)
-
   ;; Remap the command map prefix to C-p
   :bind-keymap
   ("C-p" . projectile-command-map))
@@ -360,7 +381,7 @@
 )
 
 (require 'server)
-(unless (server-running-p))
+(unless (server-running-p) (server-start))
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -372,9 +393,10 @@
 				  doom-themes eat elixir-mode flycheck gcmh git
 				  go-mode good-scroll gruvbox-theme lsp-ui magit
 				  material-theme monokai-theme multiple-cursors
-				  org-superstar projectile solarized-theme super-save
-				  typescript-mode undo-tree vterm web-mode yaml-mode
-				  yasnippet zenburn-theme zig-mode)))
+				  org-superstar pixel-scroll projectile
+				  solarized-theme super-save typescript-mode undo-tree
+				  vterm web-mode yaml-mode yasnippet zenburn-theme
+				  zig-mode)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
