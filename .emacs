@@ -98,9 +98,29 @@
 (set-face-foreground 'font-lock-comment-delimiter-face "green")
 
 (set-face-attribute 'default nil
-  :font "Lexend"
-  :height 140) 
+  :font "JetBrains Mono"
+  :height 120) 
 (setq-default line-spacing 0.2)
+
+(use-package cmake-mode
+  :ensure t
+  :mode (("CMakeLists\\.txt\\'" . cmake-mode)
+         ("\\.cmake\\'" . cmake-mode))
+  :hook ((cmake-mode . eglot-ensure)
+         (cmake-mode . (lambda ()
+                         (setq cmake-tab-width 2)
+                         (setq indent-tabs-mode nil)
+                         (add-hook 'before-save-hook 'eglot-format-buffer nil t))))
+  :config
+  (setq cmake-tab-width 2))
+
+(add-hook 'cmake-mode-hook
+          (lambda ()
+            (setq cmake-tab-width 2)
+            (setq tab-width 2)        ;; Important for indentation
+            (setq indent-tabs-mode nil))) ;; Use spaces, not tabs
+
+
 
 (use-package ivy :ensure t)
 (ivy-mode 1)
@@ -219,7 +239,6 @@
 (add-to-list 'eglot-server-programs '(haskell-mode . ("haskell-language-server-wrapper" "--lsp")))
 (add-to-list 'auto-mode-alist '("SConstruct\\'" . python-mode))
 (add-to-list 'auto-mode-alist '("SConscript\\'" . python-mode))
-
 (with-eval-after-load 'eglot
   ;; Create a keymap for the prefix
   (define-prefix-command 'eglot-prefix-map)
@@ -244,6 +263,26 @@
   (define-key company-active-map (kbd "<up>") nil)
   (define-key company-active-map (kbd "<left>") nil)
   (define-key company-active-map (kbd "<right>") nil))
+(defun eglot-toggle ()
+  "Toggle Eglot in the current buffer."
+  (interactive)
+  (if (bound-and-true-p eglot--managed-mode)
+      ;; If already managed by Eglot, shut it down
+      (eglot-shutdown (eglot-current-server))
+    ;; Else, start Eglot
+    (call-interactively 'eglot)))
+(setq eglot-autoshutdown t
+      eglot-events-buffer-size 0
+      ;; eglot-extend-to-xref nil ; optional, commented out
+      eglot-ignored-server-capabilities
+      '(:inlayHintProvider
+        :documentHighlightProvider
+        :documentFormattingProvider
+        :documentRangeFormattingProvider
+        :documentOnTypeFormattingProvider
+        :colorProvider
+        :foldingRangeProvider)
+      eglot-stay-out-of '(yasnippet))
 
 (add-hook 'eglot-managed-mode-hook #'company-mode)
 
@@ -481,12 +520,12 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(base16-theme bases16-theme company counsel diff-hl dired-git
-				  doom-themes eat ef-themes elixir-mode flycheck gcmh
-				  git go-mode good-scroll gruvbox-theme lsp-ui magit
-				  material-theme modus-themes monokai-theme
-				  multiple-cursors org-superstar pixel-scroll
-				  projectile solarized-theme super-save
+   '(base16-theme bases16-theme cmake-mode company counsel diff-hl
+				  dired-git doom-themes eat ef-themes elixir-mode
+				  flycheck gcmh git go-mode good-scroll gruvbox-theme
+				  lsp-ui magit material-theme modus-themes
+				  monokai-theme multiple-cursors org-superstar
+				  pixel-scroll projectile solarized-theme super-save
 				  typescript-mode undo-tree web-mode yaml-mode
 				  yasnippet zenburn-theme zig-mode)))
 (custom-set-faces
